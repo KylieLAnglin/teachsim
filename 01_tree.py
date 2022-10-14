@@ -15,46 +15,26 @@ from sklearn.tree import plot_tree
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
 SEED = 6
 TEST_SIZE = 30
-# %%
-df = pd.read_stata(
-    start.RAW_DATA_DIR + FILE_NAME,
-)
-
-df.head()
-
-df["treat"] = df["treat"].map({"No Coaching": 0, "Coaching": 1})
-
-# %%
-
-
-# %%
-predictors = [
+PREDICTORS = [
     "das_stress",
     "neo_n",
-    # "crtse_total",
-    # "grit_total",
-    # "imts_total",
-    # "tmas_total",
     "tses_is",
-    # "pck2",
     "treat",
     "score0",
 ]
 
-# predictors = [
-#     "score1",
-#     "treat",
-# ]
-
-
-df = df.dropna(subset=predictors)
+# %%
+df = pd.read_stata(
+    start.RAW_DATA_DIR + FILE_NAME,
+)
+df["treat"] = df["treat"].map({"No Coaching": 0, "Coaching": 1})
+df["growth"] = df.score2 - df.score1
+df = df.dropna(subset=PREDICTORS)
 df = df.dropna(subset=["score2"])
 df = df.dropna(subset=["score1"])
-
-df["growth"] = df.score2 - df.score1
 # %%
 y = df.growth
-X = df[predictors]
+X = df[PREDICTORS]
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=TEST_SIZE, random_state=SEED
