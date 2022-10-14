@@ -13,7 +13,8 @@ from sklearn.tree import plot_tree
 
 # %%
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
-
+SEED = 6
+TEST_SIZE = 30
 # %%
 df = pd.read_stata(
     start.RAW_DATA_DIR + FILE_NAME,
@@ -37,6 +38,7 @@ predictors = [
     "tses_is",
     # "pck2",
     "treat",
+    "score0",
 ]
 
 # predictors = [
@@ -45,27 +47,6 @@ predictors = [
 # ]
 
 
-# predictors = [
-#     "das_stress",
-#     "das_anxiety",
-#     "das_depression",
-#     "neo_n",
-#     "neo_e",
-#     "neo_a",
-#     "neo_c",
-#     "rsq_total",
-#     "tses_se",
-#     "tses_is",
-#     "tses_cm",
-#     "crtse_total",
-#     # "ccs_gpa",
-#     "grit_total",
-#     "imts_total",
-#     "tmas_total",
-#     "tses_total",
-#     "pck2",
-#     "treat",
-# ]
 df = df.dropna(subset=predictors)
 df = df.dropna(subset=["score2"])
 df = df.dropna(subset=["score1"])
@@ -75,7 +56,9 @@ df["growth"] = df.score2 - df.score1
 y = df.growth
 X = df[predictors]
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=30, random_state=44)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=TEST_SIZE, random_state=SEED
+)
 len(y_train)
 len(y_test)
 
@@ -85,6 +68,26 @@ len(y_test)
 model = DecisionTreeRegressor(min_samples_leaf=10)
 model.fit(X_train, y_train)
 predictions = model.predict(X_test)
+plt.figure(figsize=(10, 8), dpi=150)
+plot_tree(model, feature_names=X.columns)
+# %%
+
+plt.savefig(start.MAIN_DIR + "results/tree.pdf")
+
+# %%
+from sklearn.metrics import mean_squared_error
+
+mean_squared_error(y_test, predictions)
+
+# %%
+df_test = X_test.merge(y_test, left_index=True, right_index=True)
+df_test["predictions"] = predictions
+mod = smf.ols(
+    formula="growth ~ predictions",
+    data=df_test,
+)
+res = mod.fit()
+print(res.summary())
 
 # %%
 model.tree_.node_count
@@ -93,6 +96,104 @@ children_left = model.tree_.children_left
 children_right = model.tree_.children_right
 feature = model.tree_.feature
 threshold = model.tree_.threshold
+
+# %%
+
+len(df_test)
+# %%
+
+mod = smf.ols(formula="growth ~ treat", data=df_test)
+res = mod.fit()
+print(res.summary(()))
+
+print(df_test[df_test.treat == 0].growth.mean())
+print(len(df_test[df_test.treat == 0].growth))
+
+print(df_test[df_test.treat == 1].growth.mean())
+print(len(df_test[df_test.treat == 1].growth))
+
+# %%
+left = df_test[df_test.treat == 0]
+
+predictor = X_train.columns[feature[1]]
+predictor_threshold = threshold[1]
+print(predictor, str(predictor_threshold))
+left["predictor_cutoff"] = np.where(left[predictor] > predictor_threshold, 1, 0)
+
+mod = smf.ols(formula="growth ~ predictor_cutoff", data=left)
+res = mod.fit()
+print(res.summary(()))
+
+print(left[left.predictor_cutoff == 0].growth.mean())
+print(len(left[left.predictor_cutoff == 0].growth))
+
+print(left[left.predictor_cutoff == 1].growth.mean())
+print(len(left[left.predictor_cutoff == 1].growth))
+left[left.predictor_cutoff == 1]
+# %%
+
+right = df_test[df_test.treat == 1]
+
+predictor = X_train.columns[feature[4]]
+predictor_threshold = threshold[4]
+print(predictor, str(predictor_threshold))
+right["predictor_cutoff"] = np.where(right[predictor] > predictor_threshold, 1, 0)
+
+mod = smf.ols(formula="growth ~ predictor_cutoff", data=right)
+res = mod.fit()
+print(res.summary(()))
+
+
+print(right[right.predictor_cutoff == 0].growth.mean())
+print(len(right[right.predictor_cutoff == 0].growth))
+
+print(right[right.predictor_cutoff == 1].growth.mean())
+print(len(right[right.predictor_cutoff == 1].growth))
+
+# %%
+right_left = right[right.predictor_cutoff == 0]
+
+predictor = X_train.columns[feature[5]]
+predictor_threshold = threshold[5]
+print(predictor, str(predictor_threshold))
+
+right_left["predictor_cutoff"] = np.where(
+    right_left[predictor] > predictor_threshold, 1, 0
+)
+
+mod = smf.ols(formula="growth ~ predictor_cutoff", data=right_left)
+res = mod.fit()
+res.summary(())
+
+print(right_left[right_left.predictor_cutoff == 0].growth.mean())
+print(len(right_left[right_left.predictor_cutoff == 0].growth))
+
+print(right_left[right_left.predictor_cutoff == 1].growth.mean())
+print(len(right_left[right_left.predictor_cutoff == 1].growth))
+
+
+# %%
+# right_right = right[right.predictor_cutoff == 1]
+
+# predictor = X_train.columns[feature[6]]
+# predictor_threshold = threshold[6]
+# print(predictor, str(predictor_threshold))
+
+# right_right["predictor_cutoff"] = np.where(
+#     right_right[predictor] > predictor_threshold, 1, 0
+# )
+
+# mod = smf.ols(formula="growth ~ predictor_cutoff", data=right_right)
+# res = mod.fit()
+# res.summary(())
+
+# print(right_right[right_right.predictor_cutoff == 0].growth.mean())
+# print(len(right_right[right_right.predictor_cutoff == 0].growth))
+
+# print(right_right[right_right.predictor_cutoff == 1].growth.mean())
+# print(len(right_right[right_right.predictor_cutoff == 1].growth))
+
+# %%
 
 node_depth = np.zeros(shape=n_nodes, dtype=np.int64)
 is_leaves = np.zeros(shape=n_nodes, dtype=bool)
@@ -138,74 +239,5 @@ for i in range(n_nodes):
             )
         )
 
-# %%
-
-
-# %%
-# %%
-
-plt.figure(figsize=(10, 8), dpi=150)
-plot_tree(model, feature_names=X.columns)
-# %%
-
-plt.savefig(start.MAIN_DIR + "results/tree.pdf")
-
-# %%
-df_test = X_test.merge(y_test, left_index=True, right_index=True)
-# %%
-
-mod = smf.ols(formula="growth ~ treat", data=df_test)
-res = mod.fit()
-res.summary(())
-
-print(df_test[df_test.treat == 0].growth.mean())
-print(len(df_test[df_test.treat == 0].growth))
-
-print(df_test[df_test.treat == 1].growth.mean())
-print(len(df_test[df_test.treat == 1].growth))
-
-# %%
-left = df_test[df_test.treat == 0]
-left["tses_is_cutoff"] = np.where(left.tses_is <= 6.562, 0, 1)
-# left["tses_is_cutoff"] = np.where(left.tses_is <= 6.562, 0, 1)
-
-mod = smf.ols(formula="growth ~ tses_is_cutoff", data=left)
-res = mod.fit()
-res.summary(())
-
-print(left[left.tses_is_cutoff == 0].growth.mean())
-print(len(left[left.tses_is_cutoff == 0].growth))
-
-print(left[left.tses_is_cutoff == 1].growth.mean())
-print(len(left[left.tses_is_cutoff == 1].growth))
-# %%
-right = df_test[df_test.treat == 1]
-right["cutoff"] = np.where(right.neo_n <= 2.39, 0, 1)
-# right["cutoff"] = np.where(right.neo_n <= 2.375, 0, 1)
-
-mod = smf.ols(formula="growth ~ cutoff", data=right)
-res = mod.fit()
-res.summary(())
-
-print(right[right.cutoff == 0].growth.mean())
-print(len(right[right.cutoff == 0].growth))
-
-print(right[right.cutoff == 1].growth.mean())
-print(len(right[right.cutoff == 1].growth))
-
-# %%
-right_right = right[right.treat == 1]
-right_right["cutoff"] = np.where(right_right.tses_is <= 6.062, 0, 1)
-# right_right["cutoff"] = np.where(right_right.tses_is <= 6.062, 0, 1)
-
-mod = smf.ols(formula="growth ~ cutoff", data=right_right)
-res = mod.fit()
-res.summary(())
-
-print(right_right[right_right.cutoff == 0].growth.mean())
-print(len(right_right[right_right.cutoff == 0].growth))
-
-print(right_right[right_right.cutoff == 1].growth.mean())
-print(len(right_right[right_right.cutoff == 1].growth))
 
 # %%
