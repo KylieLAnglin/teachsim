@@ -10,6 +10,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
 import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
+from scipy import stats
+
 
 # %%
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
@@ -39,32 +41,45 @@ X = df[PREDICTORS]
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=TEST_SIZE, random_state=SEED
 )
-len(y_train)
-len(y_test)
-
-# X_train = df[predictors]
-# y_train = df.growth
+# %%
+len(X_train)
+train_df = X_train.merge(y_train, left_index=True, right_index=True)
+print(train_df.growth.mean())
 # %%
 model = DecisionTreeRegressor(min_samples_leaf=10)
 model.fit(X_train, y_train)
-predictions = model.predict(X_test)
 plt.figure(figsize=(10, 8), dpi=150)
 plot_tree(model, feature_names=X.columns)
 # %%
 
-plt.savefig(start.MAIN_DIR + "results/tree.pdf")
+# plt.savefig(start.MAIN_DIR + "results/tree.pdf")
 
 # %%
 from sklearn.metrics import mean_squared_error
 
-mean_squared_error(y_test, predictions)
-
+predictions = model.predict(X_test)
+rmse = mean_squared_error(y_test, predictions)
+test = X_test
+test["predictions"] = predictions
+test["growth"] = y_test
+test["error"] = test.predictions - test.growth
 # %%
-df_test = X_test.merge(y_test, left_index=True, right_index=True)
-df_test["predictions"] = predictions
+test["predictions"] = predictions
 mod = smf.ols(
     formula="growth ~ predictions",
-    data=df_test,
+    data=test,
 )
 res = mod.fit()
 print(res.summary())
+
+# %%
+tses_cutoff_percentile = stats.percentileofscore(df.tses_is, 6.375)
+0.81 / df.growth.std()
+0.43 / df.growth.std()
+score0_cutoff_percentile = stats.percentileofscore(df.score0, 4.5)
+stress_cutoff_percentile = stats.percentileofscore(df.das_stress, 0.64)
+1.9 / df.growth.std()
+
+rmse / df.growth.std()
+
+# %%
