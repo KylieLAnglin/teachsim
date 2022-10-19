@@ -17,13 +17,7 @@ from scipy import stats
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
 SEED = 6
 TEST_SIZE = 30
-PREDICTORS = [
-    "das_stress",
-    "neo_n",
-    "tses_is",
-    "treat",
-    "score0",
-]
+PREDICTORS = ["das_stress", "neo_n", "tses_is", "treat", "score0", "score1"]
 
 # %%
 df = pd.read_stata(
@@ -46,13 +40,14 @@ len(X_train)
 train_df = X_train.merge(y_train, left_index=True, right_index=True)
 print(train_df.growth.mean())
 # %%
-model = DecisionTreeRegressor(min_samples_leaf=10)
+model = DecisionTreeRegressor(min_samples_leaf=8)
 model.fit(X_train, y_train)
 plt.figure(figsize=(10, 8), dpi=150)
 plot_tree(model, feature_names=X.columns)
 # %%
 
-# plt.savefig(start.MAIN_DIR + "results/tree.pdf")
+plt.savefig(start.MAIN_DIR + "results/tree.pdf")
+
 
 # %%
 from sklearn.metrics import mean_squared_error
