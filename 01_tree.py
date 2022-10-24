@@ -17,7 +17,7 @@ from scipy import stats
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
 SEED = 6
 TEST_SIZE = 30
-PREDICTORS = ["das_stress", "neo_n", "tses_is", "treat", "score0", "score1"]
+PREDICTORS = ["das_stress_p", "neo_n_p", "tses_is_p", "treat", "score0", "score1"]
 
 # %%
 df = pd.read_stata(
@@ -25,9 +25,17 @@ df = pd.read_stata(
 )
 df["treat"] = df["treat"].map({"No Coaching": 0, "Coaching": 1})
 df["growth"] = df.score2 - df.score1
+
+df["das_stress_p"] = df.das_stress.rank(pct=True)
+df["neo_n_p"] = df.neo_n.rank(pct=True)
+df["neo_e_p"] = df.neo_e.rank(pct=True)
+df["tses_is_p"] = df.tses_is.rank(pct=True)
+
 df = df.dropna(subset=PREDICTORS)
 df = df.dropna(subset=["score2"])
 df = df.dropna(subset=["score1"])
+
+df = df.set_index("id")
 # %%
 y = df.growth
 X = df[PREDICTORS]
@@ -73,6 +81,8 @@ tses_cutoff_percentile = stats.percentileofscore(df.tses_is, 6.375)
 0.43 / df.growth.std()
 score0_cutoff_percentile = stats.percentileofscore(df.score0, 4.5)
 stress_cutoff_percentile = stats.percentileofscore(df.das_stress, 0.64)
+stress_cutoff_percentile = stats.percentileofscore(df.das_stress, 0.786)
+
 1.9 / df.growth.std()
 
 rmse / df.growth.std()
