@@ -17,13 +17,8 @@ from scipy import stats
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
 SEED = 6
 TEST_SIZE = 30
-PREDICTORS = [
-    "das_stress",
-    "neo_n",
-    "tses_is",
-    "treat",
-    "score0",
-]
+PREDICTORS = ["dass_total", "neo_n", "tses_is", "score0", "score1", "treat"]
+
 
 # %%
 df = pd.read_stata(
@@ -43,14 +38,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # %%
-df[
-    [
-        "das_stress",
-        "neo_n",
-        "tses_is",
-        "treat",
-        "score0",
-    ]
-].corr()
+df[PREDICTORS].corr()
 
 # %%

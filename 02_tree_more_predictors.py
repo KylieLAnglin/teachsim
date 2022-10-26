@@ -17,8 +17,24 @@ from scipy import stats
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
 SEED = 6
 TEST_SIZE = 30
-# PREDICTORS = ["das_stress_p", "neo_n_p", "tses_is_p", "treat", "score0", "score1"]
-PREDICTORS = ["dass_total_p", "neo_n_p", "tses_is_p", "treat", "score0", "score1"]
+PREDICTORS = [
+    # "das_stress",
+    # "das_depression",
+    # "das_anxiety",
+    "dass_total",
+    "neo_n",
+    # "neo_e",
+    # "neo_a",
+    # "neo_c",
+    # "neo_o",
+    # "tses_is",
+    # "tses_cm",
+    # "tses_se",
+    "tses_total",
+    "treat",
+    "score0",
+    "score1",
+]
 
 # %%
 df = pd.read_stata(
@@ -31,8 +47,7 @@ df["das_stress_p"] = df.das_stress.rank(pct=True)
 df["neo_n_p"] = df.neo_n.rank(pct=True)
 df["neo_e_p"] = df.neo_e.rank(pct=True)
 df["tses_is_p"] = df.tses_is.rank(pct=True)
-df["dass_total_p"] = df.dass_total.rank(pct=True)
-df["tses_total_p"] = df.tses_total.rank(pct=True)
+
 df = df.dropna(subset=PREDICTORS)
 df = df.dropna(subset=["score2"])
 df = df.dropna(subset=["score1"])
@@ -50,7 +65,7 @@ len(X_train)
 train_df = X_train.merge(y_train, left_index=True, right_index=True)
 print(train_df.growth.mean())
 # %%
-model = DecisionTreeRegressor(min_samples_leaf=8)
+model = DecisionTreeRegressor(min_samples_leaf=7)
 model.fit(X_train, y_train)
 plt.figure(figsize=(10, 8), dpi=150)
 plot_tree(model, feature_names=X.columns)
