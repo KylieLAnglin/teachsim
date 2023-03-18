@@ -64,19 +64,98 @@ test = X_test
 test["predictions"] = predictions
 test["growth"] = y_test
 test["error"] = test.predictions - test.growth
+
+
+
+# %%
+len(test)
+test.growth.mean()
+
+
+# %%
+test_control = test[test.treat == 0]
+print(test_control.growth.mean())
+print(len(test_control))
+
+# %%
+test_treat = test[test.treat == 1]
+print(test_treat.growth.mean())
+print(len(test_treat))
+
+
+# %% 
+test_control_low_base = test_control[test_control.score1 <= 4.25]
+print(test_control_low_base.growth.mean())
+print(len(test_control_low_base))
+
+
+test_control_high_base = test_control[test_control.score1 > 4.25]
+print(test_control_high_base.growth.mean())
+print(len(test_control_high_base))
+
+
+# %%
+test_treat_low_base = test_treat[test_treat.score1 <= 5.25]
+print(test_treat_low_base.growth.mean())
+print(len(test_treat_low_base))
+
+
+test_treat_high_base = test_treat[test_treat.score1 > 5.25]
+print(test_treat_high_base.growth.mean())
+print(len(test_treat_high_base))
+
+
+
+# %%
+test_control_high_base_low_efficacy = test_control_high_base[test_control_high_base.tses_is_p <= .533]
+print(test_control_high_base_low_efficacy.growth.mean())
+print(len(test_control_high_base_low_efficacy))
+
+test_control_high_base_high_efficacy = test_control_high_base[test_control_high_base.tses_is_p > .533]
+print(test_control_high_base_high_efficacy.growth.mean())
+print(len(test_control_high_base_high_efficacy))
+
+
+# %%
+test_test_low_base_low_depression = test_treat_low_base[test_treat_low_base.dass_total_p <= 0.451]
+print(test_test_low_base_low_depression.growth.mean())
+print(len(test_test_low_base_low_depression))
+
+test_test_low_base_high_depression = test_treat_low_base[test_treat_low_base.dass_total_p > 0.451]
+print(test_test_low_base_high_depression.growth.mean())
+print(len(test_test_low_base_high_depression))
+
+
 # %%
 mod = smf.ols(
-    formula="growth ~ predictions",
+    formula="growth ~ tses_is_p",
     data=test,
 )
 res = mod.fit()
 print(res.summary())
 
 
+
+mod = smf.ols(
+    formula="growth ~ tses_is_p",
+    data=test[test.treat == 0],
+)
+res = mod.fit()
+print(res.summary())
+
 # %%
 mod = smf.ols(
-    formula="growth ~ treat",
+    formula="growth ~ dass_total_p",
     data=test,
+)
+res = mod.fit()
+print(res.summary())
+
+
+
+mod = smf.ols(
+    formula="growth ~ dass_total_p",
+    data=test[test.treat == 1],
 )
 res = mod.fit()
 print(res.summary())
