@@ -77,6 +77,50 @@ mod = smf.ols(
 res = mod.fit()
 print(res.summary())
 
+
+# %%
+mod = smf.ols(
+    formula="growth ~ treat",
+    data=test,
+)
+res = mod.fit()
+print(res.summary())
+
+# %%
+mod = smf.ols(
+    formula="growth ~ treat + score1",
+    data=test,
+)
+res = mod.fit()
+print(res.summary())
+
+# %%
+test["treatXscore1"] = test["treat"].astype(int) * test["score1"]
+mod = smf.ols(
+    formula="growth ~ treat + score1 + treatXscore1",
+    data=test,
+)
+res = mod.fit()
+print(res.summary())
+
+# %%
+test["treatXscore1"] = test.treat*test.score1 
+mod = smf.ols(
+    formula="growth ~ treat + score1 + tses_is_p + dass_total_p",
+    data=test,
+)
+res = mod.fit()
+print(res.summary())
+
+# %%
+test["low_score"] = np.where(test.score1 < 4.25, 1, 0)
+mod = smf.ols(
+    formula="growth ~ treat + lowscore",
+    data=test,
+)
+res = mod.fit()
+print(res.summary())
+
 # %%
 tses_cutoff_percentile = stats.percentileofscore(df.tses_is, 6.375)
 0.81 / df.growth.std()

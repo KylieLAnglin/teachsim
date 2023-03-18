@@ -1,2 +1,3 @@
 .python-version
-library/__pycache__/start.cpython-38.pyc
+library/__pycache__/start.cpython*.pyc
+library/__pycache__/__init__.cpython-39.pyc
