@@ -1,6 +1,6 @@
 HOME_DIR = "/Users/kla21002/"
 
-MAIN_DIR = HOME_DIR + "Dropbox/Active/teachsim/"
+MAIN_DIR = HOME_DIR + "Dropbox/Active/Research/teachsim/"
 # MAIN_DIR = "/Users/kylieanglin/Dropbox/Active/teachsim/"
 
 
