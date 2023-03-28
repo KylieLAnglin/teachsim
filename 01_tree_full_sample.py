@@ -1,18 +1,12 @@
 # %%
 # %%
-from re import sub
 import pandas as pd
 import numpy as np
 from library import start
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
-from sklearn.model_selection import train_test_split
+
 from sklearn.tree import DecisionTreeRegressor
 import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
-from scipy import stats
-from sklearn.metrics import mean_squared_error
-
 
 # %%
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
@@ -30,9 +24,9 @@ PREDICTORS_RAW = [
     "neo_c",
     "neo_o",
     "tses_is",
-    "tses_cm",
-    "tses_se",
-    "tses_total",
+    # "tses_cm",
+    # "tses_se",
+    # "tses_total",
     "score0",
     "score1",
 ]
@@ -78,4 +72,57 @@ print("Victoria:", model.apply(X_train.loc[105].values.reshape(1, -1)))
 print("Liz:", model.apply(X_train.loc[41].values.reshape(1, -1)))
 print("Alex:", model.apply(X_train.loc[57].values.reshape(1, -1)))
 
+
+# %%
+df["leaves"] = model.apply(X_train)
+df["leaf"] = 0
+df["leaf"] = np.where(df.leaves == 2, 1, df.leaf)
+df["leaf"] = np.where(df.leaves == 3, 2, df.leaf)
+df["leaf"] = np.where(df.leaves == 5, 3, df.leaf)
+df["leaf"] = np.where(df.leaves == 6, 4, df.leaf)
+df.leaf.value_counts()
+
+# %%
+
+df[df.leaf == 1].growth.mean()
+df.loc[43].growth.mean()
+
+for predictor in predictors_percentiles:
+    print(predictor)
+    print("Overall mean : " + str(df[df.leaf == 1][predictor].mean().round(2)))
+    print("Kathleen" + str(df.loc[43][predictor].mean().round(2)))
+    print(" ")
+# %%
+LEAF = 2
+CASE = 105
+df[df.leaf == LEAF].growth.mean()
+df.loc[CASE].growth.mean()
+
+for predictor in predictors_percentiles:
+    print(predictor)
+    print("Overall mean : " + str(df[df.leaf == LEAF][predictor].mean().round(2)))
+    print("Victoria" + str(df.loc[CASE][predictor].mean().round(2)))
+    print(" ")
+# %%
+LEAF = 3
+CASE = 41
+df[df.leaf == LEAF].growth.mean()
+df.loc[CASE].growth.mean()
+
+for predictor in predictors_percentiles:
+    print(predictor)
+    print("Overall mean : " + str(df[df.leaf == LEAF][predictor].mean().round(2)))
+    print("Liz" + str(df.loc[CASE][predictor].mean().round(2)))
+    print(" ")
+# %%
+LEAF = 4
+CASE = 57
+df[df.leaf == LEAF].growth.mean()
+df.loc[CASE].growth.mean()
+
+for predictor in predictors_percentiles:
+    print(predictor)
+    print("Overall mean : " + str(df[df.leaf == LEAF][predictor].mean().round(2)))
+    print("Alex" + str(df.loc[CASE][predictor].mean().round(2)))
+    print(" ")
 # %%
