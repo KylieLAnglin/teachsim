@@ -17,7 +17,7 @@ from sklearn.metrics import mean_squared_error
 # %%
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
 SEED = 6
-PREDICTORS = ["dass_total_p", "neo_n_p", "tses_is_p", "treat", "score0", "score1"]
+# PREDICTORS = ["dass_total_p", "neo_n_p", "tses_is_p", "treat", "score0", "score1"]
 
 # %%
 df = pd.read_stata(
@@ -26,39 +26,39 @@ df = pd.read_stata(
 df["treat"] = df["treat"].map({"No Coaching": 0, "Coaching": 1})
 df["growth"] = df.score2 - df.score1
 
-df["das_stress_p"] = df.das_stress.rank(pct=True)
-df["neo_n_p"] = df.neo_n.rank(pct=True)
-df["neo_e_p"] = df.neo_e.rank(pct=True)
-df["tses_is_p"] = df.tses_is.rank(pct=True)
-df["dass_total_p"] = df.dass_total.rank(pct=True)
-df["tses_total_p"] = df.tses_total.rank(pct=True)
-df = df.dropna(subset=PREDICTORS)
-df = df.dropna(subset=["score2"])
-df = df.dropna(subset=["score1"])
+PREDICTORS_RAW = [
+    "das_stress",
+    "das_depression",
+    "das_anxiety",
+    "dass_total",
+    "neo_n",
+    "neo_e",
+    "neo_a",
+    "neo_c",
+    "neo_o",
+    "tses_is",
+    "tses_cm",
+    "tses_se",
+    "tses_total",
+    "score0",
+    "score1",
+]
 
+predictors_percentiles = []
+for predictor in PREDICTORS_RAW:
+    new_predictor = predictor + "_p"
+    df[new_predictor] = df[predictor].rank(pct = True)
+    predictors_percentiles.append(new_predictor)
+
+predictors = predictors_percentiles + ["treat"]
+# %%
+df = df.dropna(subset=predictors)
+df = df.dropna(subset=["growth"])
 df = df.set_index("id")
 # %%
-# PREDICTORS = [
-#     "das_stress",
-#     "das_depression",
-#     "das_anxiety",
-#     "dass_total",
-#     "neo_n",
-#     "neo_e",
-#     "neo_a",
-#     "neo_c",
-#     "neo_o",
-#     "tses_is",
-#     "tses_cm",
-#     "tses_se",
-#     "tses_total",
-#     "treat",
-#     "score0",
-#     "score1",
-# ]
-y = df.growth
-X = df[PREDICTORS]
 
+y = df.growth
+X = df[predictors]
 
 X_train = X
 y_train = y
@@ -69,9 +69,7 @@ MIN_SAMPLES = 10 # good
 MIN_SAMPLES = 12 # Victoria good but now missing high treat
 MIN_SAMPLES = 20 #nice and simple
 model = DecisionTreeRegressor(min_samples_leaf=MIN_SAMPLES)
-# model = DecisionTreeRegressor(max_depth=4)
 
-# model = DecisionTreeRegressor()
 model.fit(X_train, y_train)
 
 # %%
