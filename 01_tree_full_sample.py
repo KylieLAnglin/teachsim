@@ -17,14 +17,7 @@ from sklearn.metrics import mean_squared_error
 # %%
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
 SEED = 6
-# PREDICTORS = ["dass_total_p", "neo_n_p", "tses_is_p", "treat", "score0", "score1"]
-
-# %%
-df = pd.read_stata(
-    start.RAW_DATA_DIR + FILE_NAME,
-)
-df["treat"] = df["treat"].map({"No Coaching": 0, "Coaching": 1})
-df["growth"] = df.score2 - df.score1
+MIN_SAMPLES = 20 
 
 PREDICTORS_RAW = [
     "das_stress",
@@ -43,6 +36,13 @@ PREDICTORS_RAW = [
     "score0",
     "score1",
 ]
+
+# %%
+df = pd.read_stata(
+    start.RAW_DATA_DIR + FILE_NAME,
+)
+df["treat"] = df["treat"].map({"No Coaching": 0, "Coaching": 1})
+df["growth"] = df.score2 - df.score1
 
 predictors_percentiles = []
 for predictor in PREDICTORS_RAW:
@@ -63,11 +63,6 @@ X = df[predictors]
 X_train = X
 y_train = y
 
-# %%
-MIN_SAMPLES = 8
-MIN_SAMPLES = 10 # good
-MIN_SAMPLES = 12 # Victoria good but now missing high treat
-MIN_SAMPLES = 20 #nice and simple
 model = DecisionTreeRegressor(min_samples_leaf=MIN_SAMPLES)
 
 model.fit(X_train, y_train)
@@ -75,7 +70,7 @@ model.fit(X_train, y_train)
 # %%
 plt.figure(figsize=(10, 8), dpi=150)
 plot_tree(model, feature_names=X.columns, node_ids=True, max_depth = 5)
-# plt.savefig(start.MAIN_DIR + "results/tree.pdf")
+plt.savefig(start.MAIN_DIR + "results/tree.pdf")
 
 # %%
 print("Kathleen:", model.apply(X_train.loc[43].values.reshape(1, -1)))
