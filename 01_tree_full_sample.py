@@ -4,10 +4,18 @@ import pandas as pd
 import numpy as np
 from library import start
 
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+import seaborn as sns
 from sklearn.tree import DecisionTreeRegressor
 import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
 
+
+sns.set_style("white")
+sns.set(font="Times")
 # %%
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
 SEED = 6
@@ -49,6 +57,23 @@ predictors = predictors_percentiles + ["treat"]
 df = df.dropna(subset=predictors)
 df = df.dropna(subset=["growth"])
 df = df.set_index("id")
+
+# %%
+df["first_growth"] = df.score1 - df.score0
+df.first_growth.mean()
+
+# %%
+df["big_growth"] = df.score2 - df.score0
+df.big_growth.mean()
+
+# %%
+plt.hist(df.growth, bins=10, color="lightgray")
+plt.xlabel('Change in Feedback Quality')
+plt.ylabel('Number of Participants')
+plt.yticks([2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24])
+
+# %%
+plt.boxplot(df.growth)
 # %%
 
 y = df.growth
