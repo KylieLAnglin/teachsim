@@ -92,28 +92,5 @@ mod = smf.ols(
 res = mod.fit(cov_type="cluster", cov_kwds={"groups": df["strata"]})
 print(res.summary())
 
-# %% Model 2
-mod = smf.ols(
-    formula="score ~ treat2 + C(strata) + highseshs + highseshs_miss" + covar_formula,
-    data=df,
-)
-res = mod.fit(cov_type="cluster", cov_kwds={"groups": df["strata"]})
-print(res.summary())
-
-
-# %% Model 3
-mod = smf.ols(
-    formula="score ~ treat + C(strata) + C(interactor) + highseshs + highseshs_miss "
-    + covar_formula,
-    data=df,
-)
-res = mod.fit(cov_type="cluster", cov_kwds={"groups": df["strata"]})
-print(res.summary())
-
-
-# %%
-df[df.treat == "No Coaching"].score.mean()
-
-# TODO: Figure out how they controlled for baseline 0 and 1
 
 # %%
