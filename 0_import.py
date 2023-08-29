@@ -83,7 +83,7 @@ for covar in covars:
 # %%
 df["treat2"] = df["treat"].map({"Coaching": 1, "No Coaching": 0})
 print(df[df.treat2 == 0]["score"].mean())
-
+df["growth_pre_to_post"] = df.score - df.score1
 # %% Model 1
 mod = smf.ols(
     formula="score ~ treat2 + C(strata)",
@@ -93,4 +93,112 @@ res = mod.fit(cov_type="cluster", cov_kwds={"groups": df["strata"]})
 print(res.summary())
 
 
+# %%
+mod = smf.ols(
+    formula="score ~ treat2 + C(strata)",
+    data=df,
+)
+res = mod.fit(cov_type="cluster", cov_kwds={"groups": df["strata"]})
+print(res.summary())
+
+# %%
+df["elementary"] = np.where(df.program == "elementary", 1, 0)
+potential_covariates = [
+    "ccs_gpa",
+    "age",
+    "female",
+    "white",
+    "plans_ses",
+    "plans_race",
+    "plans_ach",
+    "ytrt_total",
+    "crtse_total",
+    "das_depression",
+    "das_anxiety",
+    "das_stress",
+    "dass_total",
+    "fit_total",
+    "grit_total",
+    "imts_total",
+    "neo_n",
+    "neo_e",
+    "neo_o",
+    "neo_a",
+    "neo_c",
+    "rsq_total",
+    "tmas_total",
+    "tses_se",
+    "tses_is",
+    "tses_cm",
+    "tses_total",
+    "elementary",
+]
+
+# for var in potential_covariates:
+#     temp_df = df
+#     temp_df["covar"] = temp_df[var]
+#     temp_df["treat"] = np.where(temp_df.treat2 == 1, 1, 0)
+#     temp_df["interaction"] = temp_df.covar * temp_df.treat
+#     temp_df = temp_df.dropna(
+#         subset=["score", "treat2", "strata", "covar", "interaction"], axis=0
+#     )
+#     mod = smf.ols(
+#         formula="score ~ treat2 + C(strata) + covar + interaction",
+#         data=temp_df,
+#     )
+#     res = mod.fit(cov_type="cluster", cov_kwds={"groups": temp_df["strata"]})
+#     p_interaction = res.pvalues["interaction"]
+#     if p_interaction < 0.05:
+#         print("")
+#         print(var)
+#         # print(res.summary())
+
+for var in potential_covariates:
+    temp_df = df
+    temp_df["covar"] = temp_df[var]
+    temp_df["treat"] = np.where(temp_df.treat2 == 1, 1, 0)
+    temp_df = df[df.treat == 0]
+    temp_df = temp_df.dropna(
+        subset=[
+            "growth_pre_to_post",
+            "treat2",
+            "covar",
+        ],
+        axis=0,
+    )
+    mod = smf.ols(
+        formula="growth_pre_to_post ~ covar",
+        data=temp_df,
+    )
+    res = mod.fit(cov_type="cluster", cov_kwds={"groups": temp_df["strata"]})
+    p_interaction = res.pvalues["covar"]
+    if p_interaction < 0.05:
+        print("")
+        print(var)
+        # print(res.summary())
+
+
+for var in potential_covariates:
+    temp_df = df
+    temp_df["covar"] = temp_df[var]
+    temp_df["treat"] = np.where(temp_df.treat2 == 1, 1, 0)
+    temp_df = df[df.treat == 1]
+    temp_df = temp_df.dropna(
+        subset=[
+            "growth_pre_to_post",
+            "treat2",
+            "covar",
+        ],
+        axis=0,
+    )
+    mod = smf.ols(
+        formula="growth_pre_to_post ~ covar",
+        data=temp_df,
+    )
+    res = mod.fit(cov_type="cluster", cov_kwds={"groups": temp_df["strata"]})
+    p_interaction = res.pvalues["covar"]
+    if p_interaction < 0.05:
+        print("")
+        print(var)
+        # print(res.summary())
 # %%
