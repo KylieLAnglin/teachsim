@@ -81,12 +81,13 @@ for covar in covars:
     covar_formula = covar_formula + " + " + covar
 
 # %%
-df["treat2"] = df["treat"].map({"Coaching": 1, "No Coaching": 0})
-print(df[df.treat2 == 0]["score"].mean())
+df = df.rename(columns={"treat": "treat_label"})
+df["treat"] = df["treat_label"].map({"Coaching": 1, "No Coaching": 0})
+print(df[df.treat == 0]["score"].mean())
 df["growth_pre_to_post"] = df.score - df.score1
 # %% Model 1
 mod = smf.ols(
-    formula="score ~ treat2 + C(strata)",
+    formula="score ~ treat + C(strata)",
     data=df,
 )
 res = mod.fit(cov_type="cluster", cov_kwds={"groups": df["strata"]})
@@ -95,10 +96,21 @@ print(res.summary())
 
 # %%
 mod = smf.ols(
-    formula="score ~ treat2 + C(strata)",
+    formula="score ~ treat + C(strata)",
     data=df,
 )
 res = mod.fit(cov_type="cluster", cov_kwds={"groups": df["strata"]})
+print(res.summary())
+
+
+covar = "CCS_GPA"
+temp_df = df[~df[covar].isnull()]
+print(temp_df[temp_df.treat == 1][covar].mean().round(2))
+mod = smf.ols(
+    formula=covar + " ~ treat ",
+    data=temp_df,
+)
+res = mod.fit(cov_type="cluster", cov_kwds={"groups": temp_df["strata"]})
 print(res.summary())
 
 # %%
