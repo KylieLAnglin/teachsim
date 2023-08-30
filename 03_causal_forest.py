@@ -58,6 +58,12 @@ X = df[covariates]
 W = None
 X_test = test[covariates]
 
+
+# Y = train[outcome]
+# T = train[treatment]
+# X = train[covariates]
+# W = None
+
 # %%
 
 causal_forest = CausalForest(
@@ -88,15 +94,13 @@ forest_importances
 # %%
 
 # %%
-
-
 causal_forest = CausalForest(
     criterion="het",
     n_estimators=1,
     min_samples_leaf=10,
-    max_depth=3,
-    max_samples=0.45,
-    honest=False,
+    max_depth=2,
+    max_samples=1.0,
+    honest=True,
     inference=False,
     random_state=5225463,
     subforest_size=1,
@@ -105,7 +109,12 @@ X = df[["neo_n", "neo_o", "tses_is"]]
 causal_forest.fit(X=X, T=T, y=Y)
 
 plt.figure(figsize=(20, 10))
-plot_tree(causal_forest[0], impurity=True, max_depth=3)
+plot_tree(causal_forest[0], impurity=True)
 plt.show()
 
 # %%
+
+Y = test[outcome]
+T = test[treatment]
+X = test[covariates]
+W = None
