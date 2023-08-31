@@ -92,7 +92,12 @@ forest_importances
 # causal_forest.estimators_
 
 # %%
+# from econml.cate_interpreter import SingleTreePolicyInterpreter
 
+# tree = SingleTreePolicyInterpreter(
+#     include_model_uncertainty=False, max_depth=2, min_samples_leaf=10
+# )
+# tree.interpret(causal_forest, X=df[["neo_n", "neo_o", "tses_is"]])
 # %%
 causal_forest = CausalForest(
     criterion="het",
