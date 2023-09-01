@@ -19,7 +19,7 @@ sns.set(font="Times")
 # %%
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
 SEED = 6
-MIN_SAMPLES = 20 
+MIN_SAMPLES = 20
 
 PREDICTORS_RAW = [
     "das_stress",
@@ -49,7 +49,7 @@ df["growth"] = df.score2 - df.score1
 predictors_percentiles = []
 for predictor in PREDICTORS_RAW:
     new_predictor = predictor + "_p"
-    df[new_predictor] = df[predictor].rank(pct = True)
+    df[new_predictor] = df[predictor].rank(pct=True)
     predictors_percentiles.append(new_predictor)
 
 predictors = predictors_percentiles + ["treat"]
@@ -68,8 +68,8 @@ df.big_growth.mean()
 
 # %%
 plt.hist(df.growth, bins=10, color="lightgray")
-plt.xlabel('Change in Feedback Quality')
-plt.ylabel('Number of Participants')
+plt.xlabel("Change in Feedback Quality")
+plt.ylabel("Number of Participants")
 plt.yticks([2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24])
 
 # %%
@@ -88,7 +88,7 @@ model.fit(X_train, y_train)
 
 # %%
 plt.figure(figsize=(10, 8), dpi=150)
-plot_tree(model, feature_names=X.columns, node_ids=True, max_depth = 5)
+plot_tree(model, feature_names=X.columns, node_ids=True, max_depth=5)
 plt.savefig(start.MAIN_DIR + "results/tree.pdf")
 
 # %%
