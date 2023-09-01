@@ -2,7 +2,7 @@
 # %%
 import pandas as pd
 import numpy as np
-from library import start
+from . import start
 import statsmodels.formula.api as smf
 
 # %%

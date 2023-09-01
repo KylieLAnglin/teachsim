@@ -12,6 +12,7 @@ import seaborn as sns
 from sklearn.tree import DecisionTreeRegressor
 import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
+from sklearn.model_selection import train_test_split
 
 
 sns.set_style("white")
@@ -19,25 +20,12 @@ sns.set(font="Times")
 # %%
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
 SEED = 6
-MIN_SAMPLES = 20
+SEED = 8
+MIN_SAMPLES = 10
+TEST_SIZE = 32  # 36
 
-PREDICTORS_RAW = [
-    "das_stress",
-    "das_depression",
-    "das_anxiety",
-    "dass_total",
-    "neo_n",
-    "neo_e",
-    "neo_a",
-    "neo_c",
-    "neo_o",
-    "tses_is",
-    # "tses_cm",
-    # "tses_se",
-    # "tses_total",
-    "score0",
-    "score1",
-]
+PREDICTORS_RAW = ["das_depression", "dass_total", "tses_is", "treat"]
+PREDICTORS_RAW = ["score1", "treat", "tses_is", "neo_o", "dass_total"]
 
 # %%
 df = pd.read_stata(
@@ -82,14 +70,44 @@ X = df[predictors]
 X_train = X
 y_train = y
 
-model = DecisionTreeRegressor(min_samples_leaf=MIN_SAMPLES)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=TEST_SIZE, random_state=SEED
+)
+
+
+model = DecisionTreeRegressor(
+    min_samples_leaf=MIN_SAMPLES, random_state=SEED, max_depth=2
+)
 
 model.fit(X_train, y_train)
 
 # %%
 plt.figure(figsize=(10, 8), dpi=150)
 plot_tree(model, feature_names=X.columns, node_ids=True, max_depth=5)
-plt.savefig(start.MAIN_DIR + "results/tree.pdf")
+# plt.savefig(start.MAIN_DIR + "results/tree.pdf")
+
+# %%
+testing = X_test.merge(y_test, left_index=True, right_index=True)
+testing["predicted_growth"] = model.predict(X=X_test)
+# testing["leaf"] = testing.predicted_growth.round(3).map(
+#     {-0.588: 1, 0.429: 2, 1.667: 3, 0.824: 4}
+# )
+# testing["leaf"] = testing.predicted_growth.round(3).map(
+#     {-0.861: 1, 0.333: 2, 1.656: 3, 0.679: 4}
+# )
+# testing["leaf"] = testing.predicted_growth.round(3).map(
+#     {-0.600: 1, 0.353: 2, 1.867: 3, 0.885: 4}
+# )
+testing["leaf"] = testing.predicted_growth.round(3).map(
+    {-0.600: 1, 0.278: 2, 1.762: 3, 0.65: 4}
+)
+testing.leaf.value_counts()
+
+testing[testing.leaf == 1].growth.mean()
+testing[testing.leaf == 2].growth.mean()
+testing[testing.leaf == 3].growth.mean()
+testing[testing.leaf == 4].growth.mean()
+
 
 # %%
 print("Kathleen:", model.apply(X_train.loc[43].values.reshape(1, -1)))

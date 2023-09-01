@@ -3,7 +3,7 @@
 from re import sub
 import pandas as pd
 import numpy as np
-from library import start
+from . import start
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from sklearn.model_selection import train_test_split
@@ -57,14 +57,13 @@ plt.savefig(start.MAIN_DIR + "results/tree.pdf")
 # Testing
 ###
 
-# %% 
+# %%
 predictions = model.predict(X_test)
 rmse = mean_squared_error(y_test, predictions)
 test = X_test
 test["predictions"] = predictions
 test["growth"] = y_test
 test["error"] = test.predictions - test.growth
-
 
 
 # %%
@@ -83,7 +82,7 @@ print(test_treat.growth.mean())
 print(len(test_treat))
 
 
-# %% 
+# %%
 test_control_low_base = test_control[test_control.score1 <= 4.25]
 print(test_control_low_base.growth.mean())
 print(len(test_control_low_base))
@@ -105,23 +104,30 @@ print(test_treat_high_base.growth.mean())
 print(len(test_treat_high_base))
 
 
-
 # %%
-test_control_high_base_low_efficacy = test_control_high_base[test_control_high_base.tses_is_p <= .533]
+test_control_high_base_low_efficacy = test_control_high_base[
+    test_control_high_base.tses_is_p <= 0.533
+]
 print(test_control_high_base_low_efficacy.growth.mean())
 print(len(test_control_high_base_low_efficacy))
 
-test_control_high_base_high_efficacy = test_control_high_base[test_control_high_base.tses_is_p > .533]
+test_control_high_base_high_efficacy = test_control_high_base[
+    test_control_high_base.tses_is_p > 0.533
+]
 print(test_control_high_base_high_efficacy.growth.mean())
 print(len(test_control_high_base_high_efficacy))
 
 
 # %%
-test_test_low_base_low_depression = test_treat_low_base[test_treat_low_base.dass_total_p <= 0.451]
+test_test_low_base_low_depression = test_treat_low_base[
+    test_treat_low_base.dass_total_p <= 0.451
+]
 print(test_test_low_base_low_depression.growth.mean())
 print(len(test_test_low_base_low_depression))
 
-test_test_low_base_high_depression = test_treat_low_base[test_treat_low_base.dass_total_p > 0.451]
+test_test_low_base_high_depression = test_treat_low_base[
+    test_treat_low_base.dass_total_p > 0.451
+]
 print(test_test_low_base_high_depression.growth.mean())
 print(len(test_test_low_base_high_depression))
 
@@ -133,7 +139,6 @@ mod = smf.ols(
 )
 res = mod.fit()
 print(res.summary())
-
 
 
 mod = smf.ols(
@@ -152,14 +157,12 @@ res = mod.fit()
 print(res.summary())
 
 
-
 mod = smf.ols(
     formula="growth ~ dass_total_p",
     data=test[test.treat == 1],
 )
 res = mod.fit()
 print(res.summary())
-
 
 
 # %%

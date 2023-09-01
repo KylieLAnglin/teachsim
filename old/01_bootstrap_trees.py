@@ -4,16 +4,18 @@ import pandas as pd
 import numpy as np
 from . import start
 
+from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
+import statsmodels.formula.api as smf
+
 import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
 
 # %%
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
 SEED = 6
-MIN_SAMPLES = 20
 
-PREDICTORS_RAW = [
+PREDICTORS = [
     "das_stress",
     "das_depression",
     "das_anxiety",
@@ -24,31 +26,35 @@ PREDICTORS_RAW = [
     "neo_c",
     "neo_o",
     "tses_is",
-    # "tses_cm",
-    # "tses_se",
-    # "tses_total",
+    "tses_cm",
+    "tses_se",
+    "tses_total",
+    "treat",
     "score0",
     "score1",
+    "elementary",
+    "rsq_total",
 ]
-
-# %%
 df = pd.read_stata(
     start.RAW_DATA_DIR + FILE_NAME,
 )
+# %%
 df["treat"] = df["treat"].map({"No Coaching": 0, "Coaching": 1})
 df["growth"] = df.score2 - df.score1
+df["elementary"] = np.where(df.program == "elementary", 1, 0)
 
-predictors_percentiles = []
-for predictor in PREDICTORS_RAW:
-    new_predictor = predictor + "_p"
-    df[new_predictor] = df[predictor].rank(pct=True)
-    predictors_percentiles.append(new_predictor)
 
-predictors = predictors_percentiles + ["treat"]
-# %%
-df = df.dropna(subset=predictors)
-df = df.dropna(subset=["growth"])
+df = df.dropna(subset=PREDICTORS)
+df = df.dropna(subset=["score2"])
+df = df.dropna(subset=["score1"])
+
 df = df.set_index("id")
+
+# %%
+y = df.growth
+X = df[PREDICTORS]
+
+
 # %%
 np.random.seed(SEED)
 seeds = np.random.randint(low=1, high=50000, size=10)
@@ -59,7 +65,7 @@ for n in seeds:
     boot = df.sample(len(df), replace=True, random_state=n)
     bootstrap_samples.append(boot)
 # %%
-
+predictors = PREDICTORS
 fig, axs = plt.subplots(2, 5)
 
 top_features = []
@@ -68,7 +74,9 @@ for boot, ax in zip(bootstrap_samples, fig.get_axes()):
     y = boot.growth
     X = boot[predictors]
 
-    model = DecisionTreeRegressor(min_samples_leaf=MIN_SAMPLES)
+    model = DecisionTreeRegressor(
+        min_samples_leaf=10,
+    )
     model.fit(X, y)
     plot_tree(model, feature_names=X.columns, ax=ax)
 
@@ -90,11 +98,17 @@ for boot, ax in zip(bootstrap_samples, fig.get_axes()):
 plt.savefig(start.MAIN_DIR + "results/bootstrap_trees.pdf")
 
 # %% Count features
+counts = []
 for predictor in predictors:
     count = 0
     for sublist in all_features:
         if predictor in sublist:
             count = count + 1
     print(predictor + " " + str(count))
+    counts = counts + [count]
 
+features = pd.DataFrame({"predictors": predictors, "count": counts}).sort_values(
+    by="count", ascending=False
+)
+features
 # %%

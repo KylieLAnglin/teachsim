@@ -4,7 +4,7 @@ import numpy as np
 
 from sklearn.model_selection import train_test_split
 from econml.grf import CausalForest
-from library import start
+from . import start
 import statsmodels.formula.api as smf
 
 
