@@ -19,7 +19,7 @@ sns.set_style("white")
 sns.set(font="Times")
 # %%
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
-SEED = 8
+SEED = start.SEED
 
 PREDICTORS = ["treat", "neo_e", "tses_is"]
 # %%

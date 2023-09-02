@@ -11,7 +11,7 @@ from sklearn.ensemble import RandomForestRegressor
 
 # %%
 FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
-SEED = 6
+SEED = start.SEED
 
 PREDICTORS = [
     "das_stress",
@@ -54,7 +54,7 @@ model = RandomForestRegressor(
     min_samples_split=2,
     min_samples_leaf=1,
     bootstrap=True,
-    random_state=6,
+    random_state=SEED,
 )
 
 model.fit(X, y)

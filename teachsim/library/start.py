@@ -4,4 +4,4 @@ RAW_DATA_DIR = (
     HOME_DIR
     + "Box Sync/Project SimTeacher/Feedback Analysis (ew3kp@Virginia.EDU)/Output/For Analysis/"
 )
-SEED = 14
+SEED = 6
