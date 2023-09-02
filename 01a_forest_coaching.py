@@ -27,6 +27,8 @@ PREDICTORS = [
     "tses_is",
     "score0",
     "score1",
+    # "rsq_total",
+    "elem",
 ]
 
 df = pd.read_stata(
