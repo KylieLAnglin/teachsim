@@ -2,7 +2,7 @@
 # %%
 import pandas as pd
 import numpy as np
-from . import start
+from teachsim.library import start
 
 
 import matplotlib.pyplot as plt
@@ -15,13 +15,25 @@ from sklearn.tree import plot_tree
 from sklearn.model_selection import train_test_split
 
 
+sns.set_style("white")
+sns.set(font="Times")
+# %%
+FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
+SEED = 8
+
 PREDICTORS = ["treat", "neo_e", "tses_is"]
-df = pd.read_csv(start.MAIN_DIR + "data/data_split.csv", index_col="id")
-len(df)
+# %%
+df = pd.read_stata(
+    start.RAW_DATA_DIR + FILE_NAME,
+)
+df["growth"] = df.score2 - df.score1
+df["treat"] = df["treat"].map({"No Coaching": 0, "Coaching": 1})
+
 
 # %%
 df = df.dropna(subset=PREDICTORS)
 df = df.dropna(subset=["growth"])
+df = df.set_index("id")
 len(df)
 # %%
 
@@ -38,15 +50,12 @@ plt.boxplot(df.growth)
 y = df.growth
 X = df[PREDICTORS]
 
-train = df[df.training == "train"]
-test = df[df.training == "test"]
 
-X_train = train[PREDICTORS]
-y_train = train.growth
-X_test = train[PREDICTORS]
-y_test = test.growth
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=round(len(df) / 3), random_state=SEED
+)
 
-model = DecisionTreeRegressor(min_samples_leaf=5, random_state=start.SEED, max_depth=2)
+model = DecisionTreeRegressor(min_samples_leaf=5, random_state=SEED, max_depth=2)
 model.fit(X_train, y_train)
 
 # %%
@@ -58,7 +67,7 @@ plot_tree(model, feature_names=X.columns, node_ids=True, max_depth=5)
 testing = X_test.merge(y_test, left_index=True, right_index=True)
 testing["predicted_growth"] = model.predict(X=X_test)
 testing["leaf"] = testing.predicted_growth.round(3).map(
-    {-0.25: 1, 0.368: 2, 0.786: 3, 1.625: 4}
+    {-0.406: 1, 0.429: 2, 0.893: 3, 1.447: 4}
 )
 testing.leaf.value_counts()
 

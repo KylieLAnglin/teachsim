@@ -2,7 +2,7 @@
 # %%
 import pandas as pd
 import numpy as np
-from . import start
+from teachsim.library import start
 
 from sklearn.tree import DecisionTreeRegressor
 import matplotlib.pyplot as plt
@@ -10,11 +10,9 @@ from sklearn.tree import plot_tree
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 
-df = pd.read_csv(start.MAIN_DIR + "data/data_split.csv", index_col="id")
-df = df[df.training == "train"]
-df = df[df.treat == 1]
-len(df)
 # %%
+FILE_NAME = "feedback_analysis_withpre_post_survey_wide.dta"
+SEED = 6
 
 PREDICTORS = [
     "das_stress",
@@ -31,10 +29,20 @@ PREDICTORS = [
     "score1",
 ]
 
+df = pd.read_stata(
+    start.RAW_DATA_DIR + FILE_NAME,
+)
+df["growth"] = df.score2 - df.score1
+
+# %%
+
+df = df[df.treat == "Coaching"]
+len(df)
+
+
 # %%
 df = df.dropna(subset=PREDICTORS)
 df = df.dropna(subset=["growth"])
-
 len(df)
 # %%
 
@@ -45,11 +53,10 @@ model = RandomForestRegressor(
     n_estimators=1000,
     criterion="squared_error",
     max_depth=None,
-    max_features=1,
-    min_samples_split=2,
-    min_samples_leaf=1,
+    min_samples_split=10,
+    min_samples_leaf=5,
     bootstrap=True,
-    random_state=start.SEED,
+    random_state=6,
 )
 
 model.fit(X, y)

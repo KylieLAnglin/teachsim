@@ -1,0 +1,6 @@
+README.md
+setup.py
+teachsim.egg-info/PKG-INFO
+teachsim.egg-info/SOURCES.txt
+teachsim.egg-info/dependency_links.txt
+teachsim.egg-info/top_level.txt
