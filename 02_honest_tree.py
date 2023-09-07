@@ -3,6 +3,7 @@
 import pandas as pd
 import numpy as np
 from teachsim.library import start
+from scipy import stats
 
 
 import matplotlib.pyplot as plt
@@ -76,11 +77,70 @@ testing[testing.leaf == 2].growth.mean()
 testing[testing.leaf == 3].growth.mean()
 testing[testing.leaf == 4].growth.mean()
 
+
 # %%
 df["predicted_growth"] = model.predict(df[PREDICTORS])
-print("Kathleen:", model.apply(df[PREDICTORS].loc[43].values.reshape(1, -1)))
-print("Victoria:", model.apply(df[PREDICTORS].loc[105].values.reshape(1, -1)))
-print("Alex:", model.apply(df[PREDICTORS].loc[57].values.reshape(1, -1)))
-print("Liz:", model.apply(df[PREDICTORS].loc[41].values.reshape(1, -1)))
+df["leaf"] = df.predicted_growth.round(3).map({-0.406: 1, 0.429: 2, 0.893: 3, 1.447: 4})
+print(
+    "Kathleen:", model.apply(df[PREDICTORS].loc[43].values.reshape(1, -1))
+)  # Least growth in self-reflection
+print(
+    "Victoria:", model.apply(df[PREDICTORS].loc[105].values.reshape(1, -1))
+)  # not greatest growth in self-reflection (6th). Greatest growth is 92. Also not greatest growth in leaf.That would be 60.
+print(
+    "Alex:", model.apply(df[PREDICTORS].loc[57].values.reshape(1, -1))
+)  # Least growth with coaching
+print(
+    "Liz:", model.apply(df[PREDICTORS].loc[41].values.reshape(1, -1))
+)  # greatest growth with coaching
 
+# %%
+# Define a colormap with two colors, one for each binary value in 'treat'
+colors = {0: "gray", 1: "black"}
+
+# Create a scatter plot with colors based on the 'treat' column
+plt.scatter(df["score1"], df["growth"], c=df["treat"].map(colors))
+
+# Customize the plot, such as adding labels, title, etc.
+plt.xlabel("Second Simulation Score")
+plt.ylabel("Growth between Second and Final Simulation")
+
+# Add a color legend
+legend_labels = {0: "Self-Reflection", 1: "Coaching"}
+handles = [
+    plt.Line2D(
+        [0],
+        [0],
+        marker="o",
+        color="w",
+        label=legend_labels[val],
+        markersize=10,
+        markerfacecolor=colors[val],
+    )
+    for val in colors
+]
+plt.legend(handles=handles, title="Treatment")
+
+# Show the plot
+plt.show()
+# %%
+# Create a scatter plot with colors based on the 'treat' column
+plt.scatter(df[df.treat == 0]["tses_is"], df[df.treat == 0]["growth"], c="black")
+
+# Customize the plot, such as adding labels, title, etc.
+plt.xlabel("Self-Efficacy")
+plt.ylabel("Growth between Second and Final Simulation")
+
+# Show the plot
+plt.show()
+# %%
+# Create a scatter plot with colors based on the 'treat' column
+plt.scatter(df[df.treat == 1]["neo_e"], df[df.treat == 1]["growth"], c="black")
+
+# Customize the plot, such as adding labels, title, etc.
+plt.xlabel("Extraversion")
+plt.ylabel("Growth between Second and Final Simulation")
+
+# Show the plot
+plt.show()
 # %%

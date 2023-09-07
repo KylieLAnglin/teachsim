@@ -1,7 +1,7 @@
 # %%
 import pandas as pd
 import numpy as np
-from . import start
+from teachsim.library import start
 import statsmodels.formula.api as smf
 
 # %%
